@@ -33,5 +33,4 @@ import NavBar from './components/NavBar.vue';
 .fade-leave-to {
   opacity: 0;
 }
-
 </style>

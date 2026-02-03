@@ -8,30 +8,23 @@
         <div class="colorIcon" :style="'background-color: '+value.color"></div>
       </div>
       <div class="dataActionBlock">
-        <button class="update" @click="updateData(value.label)"></button>
-      <button class="delete" @click="deleteData(value.label)"></button>
+        <BaseButton btnStyle="update" @clicked="updateData(value.label)" />
+        <BaseButton btnStyle="delete" @clicked="deleteData(value.label)" />
       </div>
     </div>
-    <button @click="updateChartData">Добавить сектор</button>
+    <BaseButton @clicked="updateChartData" btnText="Добавить сектор" />
     </div>
-    <Transition name="fade">
-    <div class="alert-container" v-if="alertVisible">
-      <div class="alert-content">
-        <h2>{{ alertHeader }}</h2>
-        <label for="label">
-          Наименование
-        <input id="label" v-model="newLabel" />
-        </label>
-        <label for="data">
-          Значение
-        <input id="data" v-model="newData" />
-        </label>
-        <ChromePicker v-model="color" />
-        <button @click="addData">{{ dynamicBtnText }}</button>
-        <button @click="alertVisible = !alertVisible">Отмена</button>
-      </div>
-    </div>
-    </Transition>
+    <Alert
+    :key="alertHeader"
+     :alertHeader="alertHeader" 
+     :alertVisible="alertVisible"
+     :dynamicBtnText="dynamicBtnText"
+     :oldColor="newColor"
+     :oldData="newData"
+     :oldLabel="newLabel"
+     @submit="handleSubmit"
+     @close="handleClose"
+     />
     <div>
       <PieChart :dataPoints="dynamicData" />
     </div>
@@ -40,63 +33,74 @@
 
 
 <script setup>
+import Alert from '@/components/Alert.vue';
+import BaseButton from '@/components/BaseButton.vue';
 import PieChart from '@/components/PieChart.vue';
 import { ref } from 'vue';
-import { ChromePicker } from 'vue-color';
-
+//  refs
 const alertVisible = ref(false)
 const newLabel = ref('')
 const newData = ref(0)
+const newColor = ref('#555')
 const activeUpdate = ref(false)
 const targetIndex = ref(0)
-const color = defineModel({
-  default: '#68CCCA'
-});
 const alertHeader = ref('')
 const dynamicBtnText = ref('')
-
+//  initial data
 const dynamicData = ref([
   { label: 'Сектор 1', data: 10, color: '#4BC0C0' },
   { label: 'Сектор 2', data: 20, color: '#FF6384' },
   { label: 'Сектор 3', data: 15, color: '#FFCD56' },
 ]);
-
+// handle submit emit from child Alert component
+const handleSubmit = (object) => {
+  newLabel.value = object.label
+  newData.value = object.data
+  newColor.value = object.color
+  if (activeUpdate.value === true) {
+    const newEntry = {label: newLabel.value, data: newData.value, color: newColor.value }
+    submitUpdate(targetIndex.value, newEntry)
+    alertVisible.value = false
+    activeUpdate.value = false
+  } else {
+    dynamicData.value.push({label: newLabel.value, data: newData.value, color: newColor.value })
+    alertVisible.value = false
+  }
+}
+// handle close emit from Alert
+const handleClose = () => {
+  alertVisible.value = false
+  activeUpdate.value = false
+}
+// start adding a new section
 const updateChartData = () => {
   alertVisible.value = true
   alertHeader.value = 'Добавление сектора'
   dynamicBtnText.value = 'Добавить сектор'
 };
-
-const addData = () => {
-  if (activeUpdate.value === true) {
-    const newEntry = {label: newLabel.value, data: newData.value, color: color.value }
-    submitUpdate(targetIndex.value, newEntry)
-    alertVisible.value = false
-  } else {
-    dynamicData.value.push({label: newLabel.value, data: newData.value, color: color.value })
-    alertVisible.value = false
-  }
-}
-
+// start editing an existing data field
 const updateData = (label) => {
   updateIndex(label)
   if (targetIndex.value !== -1) {
-    activeUpdate.value = true
-    alertVisible.value = true
-    dynamicBtnText.value = 'Сохранить редакцию'
     const targetElement = dynamicData.value[targetIndex.value]
     alertHeader.value = "Редакция " + targetElement.label
     newLabel.value = targetElement.label
     newData.value = targetElement.data
-    color.value = targetElement.color
+    newColor.value = targetElement.color
+    activeUpdate.value = true
+    dynamicBtnText.value = 'Сохранить редакцию'
+    alertVisible.value = true
   }
 }
+// set target data index for TargetIndex
 const updateIndex = (label) => {
    targetIndex.value = dynamicData.value.findIndex(value => value.label === label)
 }
+// replace old data field with new data field
 const submitUpdate = (index, newEntry) => {
   dynamicData.value[index] = newEntry
 }
+// remove data field from dynamicData
 const deleteData = (label) => {
   updateIndex(label)
   dynamicData.value.splice(targetIndex.value, 1)
@@ -104,12 +108,6 @@ const deleteData = (label) => {
 </script>
 
 <style scoped>
-button {
-  background-color: #1B84FF;
-  color: white;
-  width: 100%;
-  padding: 0.5rem 1rem;
-}
 .colorIcon {
   width: 1rem;
   height: 1rem;
@@ -137,54 +135,8 @@ button {
   width: 5rem;
   text-align: center;
 }
-.update {
-  width: 1rem;
-  height: 1rem;
-  background-image: url(../assets/edit.svg);
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: center;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  background-color: transparent;
-  margin-right: 1rem;
-}
-.delete {
-  width: 1rem;
-  height: 1rem;
-  background-image: url(../assets/delete.svg);
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: center;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  background-color: transparent;
-}
 .grid-container {
   align-items: start;
-}
-.alert-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100dvh;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #00000080;
-}
-.alert-content {
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: 10px;
 }
 input {
   border: none;

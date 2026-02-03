@@ -2,16 +2,17 @@
   <div class="grid-container">
     <ProgressBarCircle :state="currentState" :percentage="count" :dashboard="dashboardBool"/>
     <div class="btns-container">
-    <button @click="resetCounter">Reset</button>
-    <button @click="displayWarning">Display Warning</button>
-    <button @click="displayError">Display Error</button>
-    <button @click="displayFinished">Display Finished</button>
-    <button @click="toggleDashboard">Toggle Dashboard</button>
+        <BaseButton @clicked="resetCounter" btn-text="Перезагрузить" />
+        <BaseButton @clicked="displayWarning" btn-text="Показать Предопреждение" />
+        <BaseButton @clicked="displayError" btn-text="Показать Ошибку" />
+        <BaseButton @clicked="displayFinished" btn-text="Показать Финал" />
+        <BaseButton @clicked="toggleDashboard" btn-text="Переключить Форму" />
     </div>
   </div>
 </template>
 
 <script setup>
+import BaseButton from '@/components/BaseButton.vue';
 import ProgressBarCircle from '@/components/ProgressBarCircle.vue';
 import { onMounted, ref } from 'vue';
 const count = ref(0)
