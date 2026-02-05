@@ -7,16 +7,24 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
   import { computed, ref } from 'vue'
   import { Pie } from 'vue-chartjs'
   // auto import and register graph modules
-  import { Chart } from 'chart.js/auto'
-
+  import { Chart as ChartJS, registerables } from 'chart.js/auto';
+  // register the chart registerables
+  ChartJS.register(...registerables);
+// define prop type
+interface Point {
+  label: string,
+  data: number,
+  color: string
+}
 // Define props if data is passed from a parent component
-const props = defineProps({
-  dataPoints: Array, // Expected format: [{ x: ..., y: ... }, ...]
-});
+const props = defineProps<{
+  dataPoints: Point[],
+  chartOptions: any
+}>();
 
 const chartData = computed(() => {
   return {
@@ -35,15 +43,6 @@ const chartData = computed(() => {
 const defaultOptions = {
   responsive: true,
   maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'bottom',
-    },
-    title: {
-      display: true,
-      text: 'Тестовый Граф'
-    }
-  }
 };
 
 // Use computed property to merge default and passed options

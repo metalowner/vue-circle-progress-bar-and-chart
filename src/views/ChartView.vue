@@ -26,13 +26,13 @@
      @close="handleClose"
      />
     <div>
-      <PieChart :dataPoints="dynamicData" />
+      <PieChart :dataPoints="dynamicData" :chartOptions="defaultOptions" />
     </div>
   </div>
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 import Alert from '@/components/Alert.vue';
 import BaseButton from '@/components/BaseButton.vue';
 import PieChart from '@/components/PieChart.vue';
@@ -46,6 +46,18 @@ const activeUpdate = ref(false)
 const targetIndex = ref(0)
 const alertHeader = ref('')
 const dynamicBtnText = ref('')
+// Define default options
+const defaultOptions = {
+  plugins: {
+    legend: {
+      position: 'bottom',
+    },
+    title: {
+      display: true,
+      text: 'Универсальный Граф'
+    }
+  }
+};
 //  initial data
 const dynamicData = ref([
   { label: 'Сектор 1', data: 10, color: '#4BC0C0' },

@@ -56,14 +56,14 @@
   </svg>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref, toRefs, watch } from 'vue';
-
+// define props
 const props = defineProps({
   percentage: {
     type: Number,
     default: 0,
-    validator: (val) => val >= 0 && val <= 100,
+    validator: (val:number) => val >= 0 && val <= 100,
   },
   size: {
     type: Number,
@@ -78,10 +78,11 @@ const props = defineProps({
     default: false
   }
 });
-
+// define variables
 const { percentage, state } = toRefs(props)
 const currentState = ref(props.state)
 const radius = 45;
+// set line fill based on selected view
 const circumference = computed(() => {
   if (props.dashboard === false) {
     return 2 * Math.PI * radius
@@ -89,8 +90,9 @@ const circumference = computed(() => {
     return '220, 70'
   }
 });
+// calculate and return line fill based on percentage prop
 const transfromingCircumference =  computed(() => {
-  if (props.dashboard === false) {
+  if (props.dashboard === false && typeof circumference.value === 'number') {
     let filled = 0 + (props.percentage / 100) * circumference.value
     let unfilled = circumference.value -  (props.percentage / 100) *circumference.value
     return `${filled}, ${unfilled}`
@@ -100,14 +102,16 @@ const transfromingCircumference =  computed(() => {
     return `${filled}, ${unfilled}`
   }
 })
+// rotate for proper animation start depending on selected view
 const dynamicTransform = computed(() => {
   if (props.dashboard === false) {
     return "rotate(-90 50 50)"
   } else return "rotate(130 50 50)"
 })
-
+// declare dynamic text variables
 const dynamicText = ref('')
 const dynamicTextColor = ref('')
+// change stroke color depending on percentage and status
 const strokeColor = computed(() => {
     if (currentState.value === 'in-progress') {
       dynamicText.value = percentage.value + ' %'
@@ -129,7 +133,7 @@ const strokeColor = computed(() => {
         return '#FA2A55'
     }
 })
-
+// watch percentage and state to trigger changes
 watch([() => props.percentage, () => props.state], 
 (newValues, oldValues) => {
     if (newValues[1] === 'in-progress' && newValues[0] < 100) {
